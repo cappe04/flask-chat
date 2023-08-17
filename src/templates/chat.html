@@ -7,18 +7,14 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
 
-    <script src="{{ url_for('static', filename='js/home.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
 
     <title>Home</title>
 </head>
 <body>
-    <h1>Welcome {{ user["username"] }}!</h1>
-    Channel: 
-    <select id="dropdown_channels">
-        {% for k, v in channel_items: %}
-            <option value = "{{ k }}">{{ v }}</option>
-        {% endfor %}
-    </select>
-    <button id = "btn_join_channel">Join Channel</button>
+    <h1>Welcome to chat room "{{ channel_name }}", {{ user["username"] }}!</h1>
+    <button id="btn_home">Home</button>
+    <input type="text" id="input_message" placeholder="Send a message!">
+    <button id="btn_send">Send</button>
 </body>
 </html>
