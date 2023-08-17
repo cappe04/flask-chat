@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+
+    <script src="{{ url_for('static', filename='js/home.js') }}"></script>
+
+    <title>Home</title>
+</head>
+<body>
+    <h1>Welcome {{ user["username"] }}!</h1>
+    <input type="text" id="input_message" placeholder="Send a message!">
+    <button id="btn_send">Send</button>
+</body>
+</html>
