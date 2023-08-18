@@ -1,11 +1,13 @@
 import functools
 import os
 import datetime
+from typing import Optional
 
 from flask import Flask, render_template, request, redirect, url_for, make_response
-from flask_socketio import SocketIO
-
+from flask_socketio import SocketIO, join_room
 import jwt
+
+import cookies
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECREY_KEY", default="")
@@ -21,43 +23,25 @@ channel = {
     1: "not all"
 }
 
-TOKEN_LIFETIME = datetime.timedelta(seconds=5)
-
 def run(**kwargs):
     socketio.run(app, **kwargs)
 
-def validate_token(token, secret) -> bool:
-    try:
-        return bool(jwt.decode(token, secret, algorithms=["HS256"]))
-    except jwt.ExpiredSignatureError:
-        return False
 
-def generate_token(secret) -> str:
-    return jwt.encode({
-        "exp": datetime.datetime.utcnow() + TOKEN_LIFETIME
-    }, secret)
+def require_cookie(*requirements: str, redirect_to: Optional[str] = None):
+    def require_auth_inner(f):
+        endpoint = f.__name__ if redirect_to is None else redirect_to
 
-def get_user(request):
-    user_cookie = request.cookies.get("user", default=None)
-    if user_cookie is None:
-        return
-    
-    return jwt.decode(user_cookie, 
-                      app.secret_key, 
-                      algorithms=["HS256"])
+        @functools.wraps(f)
+        def wrapper(*args, **kwargs):
 
-def require_auth(f):
-    @functools.wraps(f)
-    def wrapper(*args, **kwargs):
-
-        token = request.cookies.get("token", default=None)
-
-        if token is None or not validate_token(token, app.secret_key):
-            return redirect(url_for("login", redirect_to=f.__name__, **kwargs))
-        
-        # send socket event
-        return f(*args, **kwargs)
-    return wrapper
+            for requirement in requirements:
+                cookie = request.cookies.get(requirement)
+                if cookie is None or not cookies.validate_cookie(cookie, app.secret_key):
+                    return redirect(url_for("login", redirect_to=endpoint, **kwargs))
+            
+            return f(*args, **kwargs)
+        return wrapper
+    return require_auth_inner
 
 
 @app.route("/")
@@ -66,9 +50,9 @@ def root():
 
 
 @app.route("/home/")
-@require_auth
+@require_cookie("token", "user")
 def home():
-    if (user := get_user(request)) is None: 
+    if (user := cookies.get_cookie_from(request.cookies, "user", app.secret_key)) is None: 
         return
     
     return render_template("home.html", 
@@ -77,13 +61,13 @@ def home():
 
 
 @app.route("/chat/<int:channel_id>")
-@require_auth
+@require_cookie("token", "user", redirect_to="home")
 def chat(*, channel_id):
-    if (user := get_user(request)) is None: 
+    if (user := cookies.get_cookie_from(request.cookies, "user", app.secret_key)) is None: 
         return
     if (channel_name := channel.get(channel_id)) is None:
         return
-    
+  
     return render_template("chat.html", 
                            user=user, 
                            channel_name=channel_name)
@@ -101,10 +85,13 @@ def login():
             
             endpoint = args.pop("redirect_to", "home")
             response = make_response(redirect(url_for(endpoint, **args)))
-            response.set_cookie("token", generate_token(app.secret_key))
-            response.set_cookie("user", 
-                                jwt.encode({ "username": username }, app.secret_key), 
-                                max_age=TOKEN_LIFETIME)
+
+            token_cookie = cookies.new_cookie(app.secret_key)
+            response.set_cookie("token", token_cookie)
+            
+            user_cookie = cookies.new_cookie(app.secret_key, payload={ "username": username })
+            response.set_cookie("user", user_cookie)
+
             return response
         
         return render_template("login.html", 
@@ -114,18 +101,24 @@ def login():
     return render_template("login.html", args=args)
 
 
-# dont need i think
+
 @socketio.on("user_connect")
-def event_user_connect():
-    if (user := get_user(request)) is None: 
+def event_user_connect(data):
+    if (user := cookies.get_cookie_from(request.cookies, "user", app.secret_key)) is None: 
         return
-    
-    socketio.emit("user_connected", user, to=request.sid)
+
+    if (channel_id := data.get("channel_id")) is None:
+        return
+
+    join_room(channel_id)
 
 
 @socketio.on("client_send_message")
 def send_message(data):
-    if (user := get_user(request)) is None: 
+    if (user := cookies.get_cookie_from(request.cookies, "user", app.secret_key)) is None: 
         return
 
-    socketio.emit("server_send_message", data | user)
+    if (channel_id := data.get("channel_id")) is None:
+        return
+
+    socketio.emit("server_send_message", data | user, to=channel_id)
