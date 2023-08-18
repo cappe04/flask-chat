@@ -8,17 +8,22 @@ $("document").ready(function(){
     const channel_id = document.location.pathname.slice(-1)
 
     socket.on("connect", function(){
-        socket.emit("user_connect", {
+        socket.emit("client_connect", {
             "channel_id": channel_id
         })
     })
 
-    socket.on("user_connected", function(data){
-        console.log("user_connected")
-        console.log(data)
+    socket.on("refresh", function(){
+        console.log("Something went wrong, reloading page!")
+        location.reload()
     })
 
     socket.on("server_send_message", function(data){
+        var message = JSON.parse(data)
+        var timestamp = new Date(message.timestamp * 1000).toLocaleString()// message.timestamp
+        $("#chat").append(
+            `<div class=message><strong>${message.user_id}</strong>: ${message.message} (<i>${timestamp}</i>)</div>`
+        )
         console.log(data)
     })
 
