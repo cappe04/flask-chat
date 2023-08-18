@@ -5,19 +5,17 @@ import jwt
 
 from . import settings
 
-ALGORITHM = "HS256"
-
 def new_cookie(secret: str | bytes = settings.SECRET_KEY, 
                exp: datetime.timedelta = settings.COOKIE_LIFETIME,
                payload: dict[str, Any] = {}) -> str:
     
     _payload = payload | { "exp": datetime.datetime.utcnow() + exp }
-    return jwt.encode(_payload, secret, algorithm=ALGORITHM)
+    return jwt.encode(_payload, secret, algorithm=settings.JWT_ALGORITHM)
 
 def validate_cookie(cookie: str | bytes, secret: str | bytes = settings.SECRET_KEY) -> bool:
     try:
         # thorws error if exp has passed
-        jwt.decode(cookie, secret, algorithms=[ALGORITHM])
+        jwt.decode(cookie, secret, algorithms=[settings.JWT_ALGORITHM])
         return True
     except (jwt.ExpiredSignatureError, jwt.InvalidSignatureError):
         return False
@@ -25,7 +23,7 @@ def validate_cookie(cookie: str | bytes, secret: str | bytes = settings.SECRET_K
 def get_cookie(cookie: str, secret: str | bytes = settings.SECRET_KEY) -> dict:
     try:
         # thorws error if exp has passed
-        payload = jwt.decode(cookie, secret, algorithms=[ALGORITHM])
+        payload = jwt.decode(cookie, secret, algorithms=[settings.JWT_ALGORITHM])
         payload.pop("exp")
         return payload
     # catch expired signature and decode error
