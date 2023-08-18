@@ -17,7 +17,7 @@ class TestCookies(unittest.TestCase):
         dt = datetime.timedelta(seconds=5)
 
         jwt_result = self.mock_cookie(secret, dt, payload)
-        cookie_result = cookies.new_cookie(secret, exp=dt, payload=payload)
+        cookie_result = cookies.new_cookie(secret=secret, exp=dt, payload=payload)
 
         self.assertEqual(jwt_result, cookie_result)
 
@@ -26,9 +26,9 @@ class TestCookies(unittest.TestCase):
         dt = datetime.timedelta(seconds=1)
         cookie = self.mock_cookie(secret, dt)
 
-        self.assertTrue(cookies.validate_cookie(cookie, secret))
+        self.assertTrue(cookies.validate_cookie(cookie, secret=secret))
         time.sleep(2)
-        self.assertFalse(cookies.validate_cookie(cookie, secret))
+        self.assertFalse(cookies.validate_cookie(cookie, secret=secret))
 
     def test_get_cookie(self):
         secret = "1a2b3c"
@@ -36,14 +36,13 @@ class TestCookies(unittest.TestCase):
         payload = { "key": "value" }
 
         cookie = self.mock_cookie(secret, dt, payload)
-        result1 = cookies.get_cookie(cookie, secret)
-        result1.pop("exp")
+        result1 = cookies.get_cookie(cookie, secret=secret)
 
         self.assertEqual(result1, payload)
         time.sleep(2)
 
-        result2 = cookies.get_cookie(cookie, secret)
-        self.assertIsNone(result2)
+        result2 = cookies.get_cookie(cookie, secret=secret)
+        self.assertEqual(result2, {})
 
     def test_get_cookie_from(self):
         secret = "1a2b3c"
@@ -52,8 +51,7 @@ class TestCookies(unittest.TestCase):
         source = {
             "cookie": self.mock_cookie(secret, dt, payload)
         }
-        result = cookies.get_cookie_from(source, "cookie", secret)
-        result.pop("exp")
+        result = cookies.get_cookie_from(source, "cookie", secret=secret)
         self.assertEqual(payload, result)
 
 
