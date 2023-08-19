@@ -5,7 +5,7 @@ $("document").ready(function(){
     //     socket.emit("user_connect")
     // })
     
-    const channel_id = document.location.pathname.slice(-1)
+    const channel_id = parseInt(document.location.pathname.slice(-1))
 
     socket.on("connect", function(){
         socket.emit("client_connect", {
@@ -20,9 +20,10 @@ $("document").ready(function(){
 
     socket.on("server_send_message", function(data){
         var message = JSON.parse(data)
-        var timestamp = new Date(message.timestamp * 1000).toLocaleString()// message.timestamp
         $("#chat").append(
-            `<div class=message><strong>${message.username}</strong>: ${message.message} (<i>${timestamp}</i>)</div>`
+            `<div class=message data-id=${message.message_id}>
+            <strong>${message.username}</strong>: ${message.message} (<i>${message.timestamp}</i>)
+            </div>`
         )
         console.log(data)
     })

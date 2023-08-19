@@ -62,9 +62,12 @@ def chat(*, channel_id):
     
     user_id = cookies.get_cookie_from(request.cookies, "user_id").get("user_id")
 
+    messages = list(database.get_messages("channel_id", channel_id, 10))
+
     return render_template("chat.html",
                            username=database.get_username(user_id),
-                           channel_name=database.get_channel_name(channel_id))
+                           channel_name=database.get_channel_name(channel_id),
+                           messages=messages)
 
 @app.route("/login/", methods = ["GET", "POST"])
 def login():
@@ -96,20 +99,12 @@ def login():
 @socketio.on("client_connect")
 def client_connect(data):
 
-    if (channel_id := data.get("channel_id")) is None:
+    channel_id = data.get("channel_id")
+
+    if not database.validate_channel(channel_id):
         return
     
-    channel_id = int(channel_id)
     join_room(channel_id)
-
-    # should be in chat function
-    for db_message in database.get_messages("channel_id", channel_id):
-        message = db_message
-        user_id = message.pop("user_id")
-        username = database.get_username(user_id)
-        message["username"] = username
-        # should be seperated event and send array
-        socketio.emit("server_send_message", json.dumps(message), to=channel_id)
 
 
 @socketio.on("client_send_message")
@@ -119,12 +114,11 @@ def send_message(data):
     
     try:
         database_message = DatabaseMessage(user_id=user_id, timestamp=timestamp, **data)
+        message_id = database.append_message(database_message)
 
-        message_id = database.append_message(database_message.model_dump())
         username = database.get_username(database_message.user_id)
-
-        chat_message = ChatMessage(username=username, timestamp=timestamp, 
-                                   message_id=message_id, **data)
+        chat_message = ChatMessage(username=username, message_id=message_id, 
+                                   **database_message.model_dump())
 
     except ValidationError:
         socketio.emit("refresh")

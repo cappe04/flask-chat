@@ -16,6 +16,12 @@
     <button id="btn_home">Home</button>
     <input type="text" id="input_message" placeholder="Send a message!">
     <button id="btn_send">Send</button>
-    <div id="chat"></div>
+    <div id="chat">
+        {% for message in messages: %}
+        <div class=message data-id={{ message.message_id }}>
+            <strong>{{ message.username }}</strong>: {{ message.message }} (<i>{{ message.timestamp }}</i>)
+        </div>
+        {% endfor %}
+    </div>
 </body>
 </html>

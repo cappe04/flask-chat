@@ -1,4 +1,5 @@
-from typing import Any
+from typing import Any, Iterator
+from .schemas import DatabaseMessage, ChatMessage
 
 MOCK_DATABASE = {
     "users": [
@@ -22,6 +23,11 @@ MOCK_DATABASE = {
             "username": "Barack Obama", 
             "password": "AGM-120 Maverick" 
         },
+        {
+            "user_id": 4, 
+            "username": "Guest", 
+            "password": "bajs123" 
+        },
     ],
     "channels": [
         {
@@ -44,10 +50,17 @@ MOCK_DATABASE = {
     ],
 }
 
-def append_message(message) -> int:
+def append_message(message: DatabaseMessage) -> int:
     message_id = len(MOCK_DATABASE["messages"])
-    MOCK_DATABASE["messages"].append(message | { "message_id": message_id })
+    MOCK_DATABASE["messages"].append(message.model_dump() | { "message_id": message_id })
     return message_id
+
+def get_messages(identifier: str, match: Any, count: int) -> Iterator[ChatMessage]:
+    for i, message in enumerate(MOCK_DATABASE["messages"]):
+        if i > count: 
+            break
+        if message[identifier] == match:
+            yield ChatMessage(**message, username=get_username(message["user_id"]))
 
 
 def get_login(username: str, password: str) -> int | None:
@@ -72,11 +85,6 @@ def get_channel_name(user_id: int | Any) -> str | None:
 def get_channels():
     for channel in MOCK_DATABASE["channels"]:
         yield (channel["channel_id"], channel["channel_name"])
-
-def get_messages(identifier: str, match: Any):
-    for message in MOCK_DATABASE["messages"]:
-        if message[identifier] == match:
-            yield message
 
 
 def __validate_query(table: str, query: str, match: Any) -> bool:
