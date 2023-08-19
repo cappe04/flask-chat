@@ -1,6 +1,8 @@
+# flask
 flask
 flask-socketio
 
+# other
 python-dotenv
 pyjwt
 pydantic
