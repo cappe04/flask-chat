@@ -22,7 +22,7 @@ $("document").ready(function(){
         var message = JSON.parse(data)
         var timestamp = new Date(message.timestamp * 1000).toLocaleString()// message.timestamp
         $("#chat").append(
-            `<div class=message><strong>${message.user_id}</strong>: ${message.message} (<i>${timestamp}</i>)</div>`
+            `<div class=message><strong>${message.username}</strong>: ${message.message} (<i>${timestamp}</i>)</div>`
         )
         console.log(data)
     })

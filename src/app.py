@@ -1,5 +1,6 @@
 import functools
 import time
+import json
 from typing import Optional
 
 from flask import Flask, render_template, request, redirect, url_for, make_response
@@ -8,21 +9,12 @@ from pydantic import ValidationError
 
 from . import settings
 from . import cookies
-from .schemas import ChatMessage
+from . import database
+from .schemas import ChatMessage, DatabaseMessage
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = settings.SECRET_KEY
 socketio = SocketIO(app)
-
-db = {
-    "cappe_04": "abc123",
-    "a": "b",
-}
-
-channel = {
-    0: "all",
-    1: "not all"
-}
 
 def run(**kwargs):
     socketio.run(app, **kwargs)
@@ -53,79 +45,89 @@ def require_cookie(*requirements: str,
 def index():
     return redirect(url_for("home"))
 
-
 @app.route("/home/")
 @require_cookie("token", "user_id")
 def home():
-    if (user := cookies.get_cookie_from(request.cookies, "user_id")) is None: 
-        return
+    user_id = cookies.get_cookie_from(request.cookies, "user_id").get("user_id")
     
     return render_template("home.html", 
-                           username=user.get("user_id"), 
-                           channel_items=channel.items())
-
+                           username=database.get_username(user_id), 
+                           channel_items=database.get_channels())
 
 @app.route("/chat/<int:channel_id>")
 @require_cookie("token", "user_id")
 def chat(*, channel_id):
-    if (channel_name := channel.get(channel_id)) is None:
-        return
+    if not database.validate_channel(channel_id):
+        return # missing channel page
     
-    user = cookies.get_cookie_from(request.cookies, "user_id")
-    user_id = user.get("user_id")
+    user_id = cookies.get_cookie_from(request.cookies, "user_id").get("user_id")
 
     return render_template("chat.html",
-                           username=user_id,
-                           channel_name=channel_name)
-
+                           username=database.get_username(user_id),
+                           channel_name=database.get_channel_name(channel_id))
 
 @app.route("/login/", methods = ["GET", "POST"])
 def login():
-
     args = request.args.to_dict()
 
     if request.method == "POST":
-
         username, password = request.form["username"], request.form["password"]
-        if (username, password) in db.items():
-            
-            endpoint = args.pop("redirect_to", "home")
-            response = make_response(redirect(url_for(endpoint, **args)))
+        if (user_id := database.get_login(username, password)) is None:
+            return render_template(
+                "login.html", 
+                args=args,
+                error_message="Opss! You did something wrong. Im not surprised..."
+            )
 
-            token_cookie = cookies.new_cookie()
-            response.set_cookie("token", token_cookie)
+        endpoint = args.pop("redirect_to", "home")
+        response = make_response(redirect(url_for(endpoint, **args)))
 
-            user_cookie = cookies.new_cookie(payload={ "user_id": username })
-            response.set_cookie("user_id", user_cookie)
+        token_cookie = cookies.new_cookie()
+        response.set_cookie("token", token_cookie)
+        user_cookie = cookies.new_cookie(payload={ "user_id": user_id })
+        response.set_cookie("user_id", user_cookie)
 
-            return response
-        
-        return render_template("login.html", 
-                               args=args,
-                               error_message="Opss! You did something wrong. Im not surprised...")
-
+        return response
+    
     return render_template("login.html", args=args)
 
 
 
 @socketio.on("client_connect")
 def client_connect(data):
+
     if (channel_id := data.get("channel_id")) is None:
         return
     
-    join_room(int(channel_id))
+    channel_id = int(channel_id)
+    join_room(channel_id)
+
+    # should be in chat function
+    for db_message in database.get_messages("channel_id", channel_id):
+        message = db_message
+        user_id = message.pop("user_id")
+        username = database.get_username(user_id)
+        message["username"] = username
+        # should be seperated event and send array
+        socketio.emit("server_send_message", json.dumps(message), to=channel_id)
 
 
 @socketio.on("client_send_message")
 def send_message(data):
-    user = cookies.get_cookie_from(request.cookies, "user_id")
+    user_id = cookies.get_cookie_from(request.cookies, "user_id").get("user_id")
     timestamp = int(time.time())
+    
     try:
-        message = ChatMessage(user_id=user.get("user_id"), 
-                              timestamp=timestamp, 
-                              **data)
+        database_message = DatabaseMessage(user_id=user_id, timestamp=timestamp, **data)
+
+        message_id = database.append_message(database_message.model_dump())
+        username = database.get_username(database_message.user_id)
+
+        chat_message = ChatMessage(username=username, timestamp=timestamp, 
+                                   message_id=message_id, **data)
+
     except ValidationError:
         socketio.emit("refresh")
         return
 
-    socketio.emit("server_send_message", message.model_dump_json(), to=message.channel_id)
+    socketio.emit("server_send_message", chat_message.model_dump_json(), to=chat_message.channel_id)
