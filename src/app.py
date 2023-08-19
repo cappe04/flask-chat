@@ -124,4 +124,6 @@ def send_message(data):
         socketio.emit("refresh")
         return
 
-    socketio.emit("server_send_message", chat_message.model_dump_json(), to=chat_message.channel_id)
+    socketio.emit("server_send_message", 
+                  chat_message.model_dump_json(), 
+                  to=chat_message.channel_id)
