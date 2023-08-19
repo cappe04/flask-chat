@@ -9,7 +9,7 @@ from app import cookies
 def require_cookie(*requirements: str, 
                    redirect_to: Optional[str] = None, 
                    with_args: bool = True):
-    def require_auth_inner(f):
+    def require_cookie_inner(f):
         endpoint = redirect_to or (f.__module__.split(".")[-1] + "." + f.__name__)
 
         @functools.wraps(f)
@@ -24,4 +24,4 @@ def require_cookie(*requirements: str,
             
             return f(*args, **kwargs)
         return wrapper
-    return require_auth_inner
+    return require_cookie_inner
