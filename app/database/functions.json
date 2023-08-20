@@ -1,0 +1,53 @@
+{
+    "commit": {
+        "user_register": 
+        {
+            "command": "INSERT INTO users(username, password, profile_picture) VALUES(?, ?, ?)",
+            "fetchall": true
+        },
+        "channel_register": 
+        {
+            "command": "INSERT INTO channels(user_id, channel_name, description) VALUES(?, ?, ?)",
+            "fetchall": true
+        },
+        "message_post": 
+        {
+            "command": "INSERT INTO messages(channel_id, user_id, message, post_time) VALUES(?, ?, ?, ?) RETURNING message_id",
+            "fetchall": false
+        }
+    },
+    "read": {
+        "user_getid": 
+        {
+            "command": "SELECT user_id FROM users WHERE username = ?",
+            "fetchall": false
+        },
+        "user_getname": 
+        {
+            "command": "SELECT username FROM users WHERE user_id = ?",
+            "fetchall": false
+        },
+        "user_getpw": 
+        {
+            "command": "SELECT password FROM users WHERE user_id = ?",
+            "fetchall": false
+        },
+
+        "channel_getmany": 
+        {
+            "command": "SELECT * FROM channels LIMIT ? OFFSET ?",
+            "fetchall": true
+        },
+        "channel_get_name": 
+        {
+            "command": "SELECT channel_name FROM channels WHERE channel_id = ?",
+            "fetchall": false
+        },
+
+        "message_getmany": 
+        {
+            "command": "SELECT * FROM messages WHERE channel_id = ? ORDER BY post_time DESC LIMIT ? OFFSET ?",
+            "fetchall": true
+        }
+    }
+}
