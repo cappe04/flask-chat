@@ -8,6 +8,7 @@
 
 # flags
     --debug                 # debug mode
+    --reload                # reload on file-update
     --app {file}            # entrypoint, app package as default
 ```
 
