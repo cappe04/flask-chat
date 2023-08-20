@@ -18,8 +18,8 @@
     <button id="btn_send">Send</button>
     <div id="chat">
         {% for message in messages: %}
-        <div class=message data-id={{ message.message_id }}>
-            <strong>{{ message.username }}</strong>: {{ message.message }} (<i>{{ message.timestamp }}</i>)
+        <div class=message data-id={{ message["message_id"] }}>
+            <strong>{{ message["username"] }}</strong>: {{ message["message"] }} (<i>{{ message["post_time"] }}</i>)
         </div>
         {% endfor %}
     </div>

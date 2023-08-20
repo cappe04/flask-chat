@@ -15,8 +15,8 @@
     <h1>Welcome {{ username }}!</h1>
     Channel: 
     <select id="dropdown_channels">
-        {% for k, v in channel_items: %}
-            <option value = "{{ k }}">{{ v }}</option>
+        {% for channel in channels: %}
+            <option value={{ channel["channel_id"] }}>{{ channel["channel_name"] }}</option>
         {% endfor %}
     </select>
     <button id = "btn_join_channel">Join Channel</button>

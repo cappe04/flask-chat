@@ -1,6 +1,9 @@
+
+
 from flask import Blueprint, request, make_response, redirect, render_template, url_for
 
-from app import cookies, database_old as database
+from app import cookies
+from app.db import DbHandle
 
 bp = Blueprint("auth", __name__)
 
@@ -10,7 +13,7 @@ def login():
 
     if request.method == "POST":
         username, password = request.form["username"], request.form["password"]
-        if (user_id := database.get_login(username, password)) is None:
+        if (user_id := DbHandle().get_login(username, password)) is None:
             return render_template(
                 "login.html", 
                 args=args,
