@@ -1,29 +1,21 @@
 from datetime import datetime
+from typing import Any, Optional
 
-from pydantic import BaseModel, field_validator, ValidationError
+from pydantic import BaseModel, Field, field_validator, ValidationError
 
-MAX_MESSAGE_LENGTH = 256 # maybe in .env
+from .settings import MESSAGE_MAX_LENGTH 
 
-class DatabaseMessage(BaseModel):
+class DbUser(BaseModel):
+    username: str = Field(..., max_length=30)
+    password: str = Field(..., max_length=60)
+    profile_picture: Optional[bytes] = None
+
+class DbMessage(BaseModel):
     channel_id: int
     user_id: int
-    message: str
-    timestamp: int
+    message: str = Field(..., max_length=MESSAGE_MAX_LENGTH)
+    post_time: int
 
-    @field_validator("message")
-    @classmethod
-    def cap_message_length(cls, v: str):
-        if len(v) > MAX_MESSAGE_LENGTH:
-            return v[:MAX_MESSAGE_LENGTH]
-        return v
-
-class ChatMessage(DatabaseMessage):
-    username: str
-    message_id: int
-    timestamp: str | int
-
-    @field_validator("timestamp")
-    @classmethod
-    def convert_timestamp(cls, v: int) -> str:
-        return datetime.fromtimestamp(v).strftime('%Y-%m-%d %H:%M:%S')
+def convert_timestamp(timestamp: int) -> str:
+    return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
 
