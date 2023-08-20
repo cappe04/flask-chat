@@ -5,16 +5,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-PORT = os.getenv("PORT")
-HOST = os.getenv("HOST")
-SECRET_KEY = os.getenv("SECRET_KEY")
+PORT = os.environ["PORT"]
+HOST = os.environ["HOST"]
+SECRET_KEY = os.environ["SECRET_KEY"]
 
-__cookie_liftime = int(os.getenv("COOKIE_LIFETIME"))
+__cookie_liftime = int(os.environ["COOKIE_LIFETIME"])
 COOKIE_LIFETIME = timedelta(seconds=__cookie_liftime)
 
-JWT_ALGORITHM = os.getenv("JWT_ALGORITHM")
+JWT_ALGORITHM = os.environ["JWT_ALGORITHM"]
+MESSAGE_MAX_LENGTH = int(os.environ["MESSAGE_MAX_LENGTH"])
 
-DATABASE = os.getenv("DATABASE")
-DATABASE_SCHEMA = os.getenv("DATABASE_SCHEMA")
-DATABASE_FUNCTIONS = os.getenv("DATABASE_FUNCTIONS")
-DATABASE_SAMPLE_DATA = os.getenv("DATABASE_SAMPLE_DATA")
+DATABASE = os.environ["DATABASE"]
+DATABASE_SCHEMA = os.environ["DATABASE_SCHEMA"]
+DATABASE_FUNCTIONS = os.environ["DATABASE_FUNCTIONS"]
+DATABASE_SAMPLE_DATA = os.environ["DATABASE_SAMPLE_DATA"]
