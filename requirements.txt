@@ -6,3 +6,4 @@ flask-socketio
 python-dotenv
 pyjwt
 pydantic
+bcrypt
