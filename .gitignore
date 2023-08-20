@@ -3,6 +3,8 @@
 .env
 .venv
 
+database/*.db
+
 app/__pycache__
 app/routes/__pycache__
 tests/__pycache__
