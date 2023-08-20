@@ -1,7 +1,7 @@
 
 
 from flask import Blueprint, render_template, request
-from app import cookies, database
+from app import cookies, database_old as database
 
 from .utils import require_cookie
 

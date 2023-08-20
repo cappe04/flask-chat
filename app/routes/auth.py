@@ -1,6 +1,6 @@
 from flask import Blueprint, request, make_response, redirect, render_template, url_for
 
-from app import cookies, database
+from app import cookies, database_old as database
 
 bp = Blueprint("auth", __name__)
 

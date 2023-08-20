@@ -4,13 +4,13 @@ from flask import request
 from flask_socketio import SocketIO, join_room
 from pydantic import ValidationError
 
-from app import cookies, database
+from app import cookies, database_old as database
 from app.schemas import ChatMessage, DatabaseMessage
 
 
 socketio = SocketIO()
 
-def init_socket(app):
+def init_app(app):
     socketio.init_app(app)
 
 def run(app, **kwargs):
@@ -29,7 +29,7 @@ def client_connect(data):
 def send_message(data):
     user_id = cookies.get_cookie_from(request.cookies, "user_id").get("user_id")
     timestamp = int(time.time())
-    
+
     try:
         database_message = DatabaseMessage(user_id=user_id, timestamp=timestamp, **data)
         message_id = database.append_message(database_message)

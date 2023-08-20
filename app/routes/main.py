@@ -1,8 +1,8 @@
 
 
-from flask import Blueprint, redirect, render_template, request, url_for, current_app
+from flask import Blueprint, redirect, render_template, request, url_for
 
-from app import cookies, database
+from app import cookies, database_old as database, db
 from .utils import require_cookie
 
 bp = Blueprint("main", __name__)

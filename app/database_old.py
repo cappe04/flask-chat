@@ -50,6 +50,8 @@ MOCK_DATABASE = {
     ],
 }
 
+# user profile picture
+
 def append_message(message: DatabaseMessage) -> int:
     message_id = len(MOCK_DATABASE["messages"])
     MOCK_DATABASE["messages"].append(message.model_dump() | { "message_id": message_id })
