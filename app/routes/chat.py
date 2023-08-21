@@ -18,19 +18,6 @@ def chat(*, channel_id):
     
     user_id = cookies.get_cookie_from(request.cookies, "user_id").get("user_id")
 
-    messages = DbHandle().get_messages(channel_id)
-
-    def convert_msgs():
-        for message in messages or []:
-            yield {
-                "message_id": message["message_id"],
-                "channel_id": message["channel_id"],
-                "message": message["message"],
-                "username": DbHandle().get_username(message["user_id"]),
-                "post_time": convert_timestamp(message["post_time"]),
-            }
-
     return render_template("chat.html",
                            username=DbHandle().get_username(user_id),
-                           channel_name=DbHandle().get_channel_name(channel_id),
-                           messages=convert_msgs())
+                           channel_name=DbHandle().get_channel_name(channel_id))

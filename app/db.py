@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import json
+import enum
 from typing import Any
 
 import click
@@ -9,8 +10,11 @@ import bcrypt
 from pydantic import ValidationError
 
 from .settings import DATABASE, DATABASE_SCHEMA, DATABASE_FUNCTIONS, DATABASE_SAMPLE_DATA
-from .schemas import DbUser, DbMessage
+from .schemas import DbUser, DbMessage, convert_timestamp
 
+class MessageFormat(enum.Enum):
+    DATA = enum.auto()
+    CHAT = enum.auto()
 
 class DbHandle:
     """Singleton database handle. Can only be called within a flask requst context."""
@@ -111,9 +115,25 @@ class DbHandle:
         except ValidationError:
             return
 
-    def get_messages(self, channel_id: int, limit: int = 100, offset: int = 0):
-        return self.DB_message_getmany(channel_id, limit, offset)
+    def get_messages(self, channel_id: int, 
+                     limit: int = 10, 
+                     offset: int = 0, 
+                     format: MessageFormat = MessageFormat.DATA):
+        messages = self.DB_message_getmany(channel_id, limit, offset)
+        if format == MessageFormat.DATA or messages is None:
+            return messages
+        
+        for i, message in enumerate(messages):
+            messages[i] |= {
+                "timestamp": convert_timestamp(message["post_time"]),
+                "username": self.get_username(message["user_id"])
+            }
+        
+        return messages
+
     #endregion
+
+
 
 
 def init_app(app):
