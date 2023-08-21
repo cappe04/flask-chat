@@ -16,12 +16,7 @@
     <button id="btn_home">Home</button>
     <input type="text" id="input_message" placeholder="Send a message!">
     <button id="btn_send">Send</button>
-    <div id="chat">
-        {% for message in messages: %}
-        <div class=message data-id={{ message["message_id"] }}>
-            <strong>{{ message["username"] }}</strong>: {{ message["message"] }} (<i>{{ message["post_time"] }}</i>)
-        </div>
-        {% endfor %}
-    </div>
+    <button id="btn_load">Load More</button>
+    <div id="chat"></div>
 </body>
 </html>
