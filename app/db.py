@@ -138,8 +138,6 @@ class DbHandle:
 
 def init_app(app):
     app.teardown_appcontext(close_db)
-    app.cli.add_command(init_db_command)
-
 
 def init_db(sample_data: bool = False):
     db = get_db()
@@ -153,23 +151,14 @@ def init_db(sample_data: bool = False):
     with current_app.open_resource(DATABASE_SAMPLE_DATA, "r") as file:
         db.executescript(file.read())
 
-
-@click.command("init-db")
-@click.option("--sample-data", default=False)
-def init_db_command(sample_data):
-    click.echo("initializing database" + " with sample data"*sample_data + "...")
-    init_db(sample_data=sample_data)
-    click.echo("finished!")
-
-
-def dict_factory(cursor, row):
+def __dict_factory(cursor, row):
     fields = [column[0] for column in cursor.description]
     return {key: value for key, value in zip(fields, row)}
 
 def get_db():
     if "db" not in g:
         g.db = sqlite3.connect(os.path.join(current_app.root_path, DATABASE))
-        g.db.row_factory = dict_factory
+        g.db.row_factory = __dict_factory
 
     return g.db
 
