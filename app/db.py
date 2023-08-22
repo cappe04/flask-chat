@@ -4,7 +4,6 @@ import json
 import enum
 from typing import Any
 
-import click
 from flask import current_app, g
 import bcrypt
 from pydantic import ValidationError
@@ -100,7 +99,7 @@ class DbHandle:
     # endregion
 
     # region ---------------- Message Functions ----------------
-    def post_message(self, *, channel_id, user_id, message, timestamp):
+    def post_message(self, channel_id, user_id, message, timestamp):
         try:
             db_message = DbMessage(channel_id=channel_id,
                                    user_id=user_id,
