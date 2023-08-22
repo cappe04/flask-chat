@@ -2,7 +2,7 @@
 
 from flask import Blueprint, request, make_response, redirect, render_template, url_for
 
-from app import cookies
+from app.cookies import Cookie
 from app.db import DbHandle
 
 bp = Blueprint("auth", __name__)
@@ -23,10 +23,8 @@ def login():
         endpoint = args.pop("redirect_to", "main.home")
         response = make_response(redirect(url_for(endpoint, **args)))
 
-        token_cookie = cookies.new_cookie()
-        response.set_cookie("token", token_cookie)
-        user_cookie = cookies.new_cookie(payload={ "user_id": user_id })
-        response.set_cookie("user_id", user_cookie)
+        Cookie.USER_STATIC.set(response, { "user_id": user_id })
+        Cookie.USER_DATA.set(response)
 
         return response
     

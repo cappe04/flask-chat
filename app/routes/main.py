@@ -1,8 +1,8 @@
 
 
-from flask import Blueprint, redirect, render_template, request, url_for
+from flask import Blueprint, make_response, redirect, render_template, request, url_for
 
-from app import cookies
+from app.cookies import Cookie
 from app.db import DbHandle
 from .utils import require_cookie
 
@@ -13,11 +13,12 @@ def index():
     return redirect(url_for("main.home"))
 
 @bp.route("/home/")
-@require_cookie("token", "user_id")
+@require_cookie("USER_STATIC")
 def home():
-    user_id = cookies.get_cookie_from(request.cookies, "user_id").get("user_id")
+    user_id = Cookie.USER_STATIC.get("user_id")
 
-
-    return render_template("home.html", 
+    response = make_response(render_template("home.html", 
                            username=DbHandle().get_username(user_id), 
-                           channels=DbHandle().get_channels())
+                           channels=DbHandle().get_channels()))
+
+    return response

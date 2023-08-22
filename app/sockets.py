@@ -3,7 +3,7 @@ import time
 from flask import request
 from flask_socketio import SocketIO, join_room
 
-from app import cookies
+from app.cookies import Cookie
 from app.schemas import convert_timestamp
 from app.db import DbHandle, MessageFormat
 
@@ -24,7 +24,7 @@ def client_connect(data):
 
 @socketio.on("message:send")
 def send_message(data):
-    user_id = cookies.get_cookie_from(request.cookies, "user_id").get("user_id")
+    user_id = Cookie.USER_STATIC.get("user_id")
 
     timestamp = int(time.time())
 
