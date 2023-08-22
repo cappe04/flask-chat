@@ -51,6 +51,7 @@ $("document").ready(function(){
             "message": $("#input_message").val(),
             "channel_id": channel_id
         })
+        $("#input_message").val("")
     })
 
     $("#btn_load").click(function(){
