@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
-
-    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
-
+    
     <title>chat / {{ channel_name }}</title>
 </head>
 <body>
@@ -18,5 +18,7 @@
     <button id="btn_send">Send</button>
     <button id="btn_load">Load More</button>
     <div id="chat"></div>
+
+    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
 </body>
 </html>
