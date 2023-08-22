@@ -7,4 +7,5 @@ app/database/*.db
 
 app/__pycache__
 app/routes/__pycache__
+app/cli/__pycache__
 tests/__pycache__
