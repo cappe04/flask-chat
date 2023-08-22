@@ -1,5 +1,4 @@
 import time
-import json
 
 from flask import request
 from flask_socketio import SocketIO, join_room
