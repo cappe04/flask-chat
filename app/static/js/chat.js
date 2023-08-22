@@ -1,4 +1,3 @@
-const channel_id = parseInt(document.location.pathname.slice(-1))
 let offset = 0
 
 function render_message(message, insert=false){
@@ -17,11 +16,7 @@ $("document").ready(function(){
     socket = io.connect(document.location.origin)
 
     socket.on("connect", function(){
-        socket.emit("client:connect", {
-            "channel_id": channel_id
-        })
         socket.emit("message:get", {
-            "channel_id": channel_id,
             "offset": offset
         })
     })
@@ -49,14 +44,12 @@ $("document").ready(function(){
     $("#btn_send").click(function(){
         socket.emit("message:send", {
             "message": $("#input_message").val(),
-            "channel_id": channel_id
         })
         $("#input_message").val("")
     })
 
     $("#btn_load").click(function(){
         socket.emit("message:get", {
-            "channel_id": channel_id,
             "offset": offset
         })
     })

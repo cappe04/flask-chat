@@ -13,7 +13,7 @@ def index():
     return redirect(url_for("main.home"))
 
 @bp.route("/home/")
-@require_cookie("USER_STATIC")
+@require_cookie(Cookie.USER_STATIC)
 def home():
     user_id = Cookie.USER_STATIC.get("user_id")
 
